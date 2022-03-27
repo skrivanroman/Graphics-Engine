@@ -105,7 +105,7 @@ namespace Vk
 		rasterizer.rasterizerDiscardEnable = VK_FALSE;
 		rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
 		rasterizer.lineWidth = 1.0f;
-		rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+		rasterizer.cullMode = VK_CULL_MODE_NONE;
 		rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
 		rasterizer.depthBiasEnable = VK_FALSE;
 		rasterizer.depthBiasConstantFactor = 0.0f; 
@@ -142,6 +142,18 @@ namespace Vk
 		colorBlending.blendConstants[2] = 0.0f;
 		colorBlending.blendConstants[3] = 0.0f; 
 
+		VkPipelineDepthStencilStateCreateInfo depthStencilInfo{};
+		depthStencilInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+		depthStencilInfo.depthTestEnable = VK_TRUE;
+		depthStencilInfo.depthWriteEnable = VK_TRUE;
+		depthStencilInfo.depthCompareOp = VK_COMPARE_OP_LESS;
+		depthStencilInfo.depthBoundsTestEnable = VK_FALSE;
+		depthStencilInfo.minDepthBounds = 0.0f;  
+		depthStencilInfo.maxDepthBounds = 1.0f; 
+		depthStencilInfo.stencilTestEnable = VK_FALSE;
+		depthStencilInfo.front = {};  
+		depthStencilInfo.back = {};  
+
 		VkGraphicsPipelineCreateInfo pipelineInfo{};
 		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 		pipelineInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
@@ -151,7 +163,7 @@ namespace Vk
 		pipelineInfo.pViewportState = &viewportState;
 		pipelineInfo.pRasterizationState = &rasterizer;
 		pipelineInfo.pMultisampleState = &multisampling;
-		pipelineInfo.pDepthStencilState = nullptr; 
+		pipelineInfo.pDepthStencilState = &depthStencilInfo;
 		pipelineInfo.pColorBlendState = &colorBlending;
 		pipelineInfo.pDynamicState = &dynamicStateInfo;
 		pipelineInfo.layout = pipelineLayout;

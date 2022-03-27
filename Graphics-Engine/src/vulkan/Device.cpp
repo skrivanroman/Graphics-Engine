@@ -162,6 +162,23 @@ namespace Vk
 		assert(false, "failed to find supported format!");
 	}
 
+	uint32_t Device::getMemoryTypeIdx(VkFlags requiredTypes, VkMemoryPropertyFlags properties) const
+	{
+		VkPhysicalDeviceMemoryProperties memProperties;
+		vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
+
+		for (uint32_t i = 0; i < memProperties.memoryTypeCount; ++i)
+		{
+			if (!(requiredTypes & (1 << i))) 
+				continue;
+
+			if ((memProperties.memoryTypes[i].propertyFlags & properties) == properties) 
+			  return i;
+		}	
+
+		assert(false, "cant find required memory type");
+	}
+
 	void Device::createLogicalDevice()
 	{
 		auto indices = getQueueFamilies(physicalDevice);

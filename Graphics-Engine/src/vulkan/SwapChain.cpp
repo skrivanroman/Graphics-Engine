@@ -30,7 +30,7 @@ namespace Vk
 		}
 
 		createImages();
-		createImageViews();
+		createDepthImages();
 	}
 
 	void SwapChain::destroySwapChain(VkSwapchainKHR oldSwapChain)
@@ -39,6 +39,13 @@ namespace Vk
 			vkDestroyFramebuffer(device.getLogicalDevice(), frameBuffer, nullptr);
 		for (auto imageView : imageViews)
 			vkDestroyImageView(device.getLogicalDevice(), imageView, nullptr);
+
+		for (auto depthImageView : depthImageViews)
+			vkDestroyImageView(device.getLogicalDevice(), depthImageView, nullptr);
+		for (auto depthImage : depthImages)
+			vkDestroyImage(device.getLogicalDevice(), depthImage, nullptr);
+		for (auto imageMemory : depthImageMemory)
+			vkFreeMemory(device.getLogicalDevice(), imageMemory, nullptr);
 
 		vkDestroySwapchainKHR(device.getLogicalDevice(), oldSwapChain, nullptr);
 	}
@@ -94,7 +101,6 @@ namespace Vk
 
 	void SwapChain::createImages()
 	{
-		//we already know the imagecount ?
 		uint32_t imageCount;
 		vkGetSwapchainImagesKHR(device.getLogicalDevice(), swapChain, &imageCount, nullptr);
 		images.resize(imageCount);
@@ -150,11 +156,22 @@ namespace Vk
 			imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 			imageInfo.flags = 0;
 
-			device.createImageWithInfo(
-				imageInfo,
-				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-				depthImages[i],
-				depthImageMemorys[i]);
+			VkResult result = vkCreateImage(device.getLogicalDevice(), &imageInfo, nullptr, &depthImages[i]);
+			assert(result == VK_SUCCESS, "cant create depth images");
+
+			VkMemoryRequirements memoryRequirements;
+			vkGetImageMemoryRequirements(device.getLogicalDevice(), depthImages[i], &memoryRequirements);
+
+			VkMemoryAllocateInfo allocInfo{};
+			allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+			allocInfo.allocationSize = memoryRequirements.size;
+			allocInfo.memoryTypeIndex = device.getMemoryTypeIdx(memoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+			result = vkAllocateMemory(device.getLogicalDevice(), &allocInfo, nullptr, &depthImageMemory[i]);
+			assert(result == VK_SUCCESS, "cant allocate depth image memory");
+
+			result = vkBindImageMemory(device.getLogicalDevice(), depthImages[i], depthImageMemory[i], 0);
+			assert(result == VK_SUCCESS, "cant bind depth image memory");
 
 			VkImageViewCreateInfo viewInfo{};
 			viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -167,9 +184,9 @@ namespace Vk
 			viewInfo.subresourceRange.baseArrayLayer = 0;
 			viewInfo.subresourceRange.layerCount = 1;
 
-			if (vkCreateImageView(device.device(), &viewInfo, nullptr, &depthImageViews[i]) != VK_SUCCESS) {
-			  throw std::runtime_error("failed to create texture image view!");
-			}
+			result = vkCreateImageView(device.getLogicalDevice(), &viewInfo, nullptr, &depthImageViews[i]);
+			assert(result == VK_SUCCESS, "cant create depth image view");
+		}
 	}
 
 	void SwapChain::createFrameBuffers(const VkRenderPass renderPass)

@@ -41,7 +41,6 @@ namespace Vk
 		void initVertexBuffer(const std::vector<Vertex>& vertices, const VkCommandPool commandPool);
 		void initIndexBuffer(const std::vector<uint32_t>& indices, const VkCommandPool commmandPool);
 		void allocateBuffer(VkBufferUsageFlags bufferUsage, VkMemoryPropertyFlags memoryProperties);
-		uint32_t getMemoryTypeIdx(VkFlags requiredTypes, VkMemoryPropertyFlags properties) const;
 
 	private:
 		const Device& device;

@@ -136,28 +136,11 @@ namespace Vk
 		VkMemoryAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         allocInfo.allocationSize = memRequirements.size;
-		allocInfo.memoryTypeIndex = getMemoryTypeIdx(memRequirements.memoryTypeBits, memoryProperties);
+		allocInfo.memoryTypeIndex = device.getMemoryTypeIdx(memRequirements.memoryTypeBits, memoryProperties);
 
 		assert(vkAllocateMemory(device.getLogicalDevice(), &allocInfo, nullptr, &bufferMemory) == VK_SUCCESS, "cant allocate buffer");
 
         vkBindBufferMemory(device.getLogicalDevice(), buffer, bufferMemory, 0);
-	}
-
-	uint32_t Buffer::getMemoryTypeIdx(VkFlags requiredTypes, VkMemoryPropertyFlags properties) const
-	{
-		VkPhysicalDeviceMemoryProperties memoryProperties;
-		vkGetPhysicalDeviceMemoryProperties(device.getPhysicalDevice(), &memoryProperties);
-
-		for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; ++i)
-		{
-			if (!(requiredTypes & (1 << i)))
-				continue;
-
-			if ((memoryProperties.memoryTypes[i].propertyFlags & properties) == properties)
-				return i;
-		}
-
-		assert(false, "cant find required memory type");
 	}
 
 	std::array<VkVertexInputBindingDescription, 1> Vertex::getBindingDescriptions()
