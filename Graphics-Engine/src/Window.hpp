@@ -32,6 +32,7 @@ public:
 	void resetWasResized() const;
 	VkExtent2D getExtent() const;
 	VkSurfaceKHR getSurface(const VkInstance instance) const;
+	float getAspectRatio() const noexcept;
 	std::pair<const char**, uint32_t> getRequiredExtensions() const;
 	void setFullScreen(bool fullScreen);
 	void resize(uint32_t width, uint32_t height);

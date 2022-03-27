@@ -8,8 +8,9 @@ namespace Vk
 	Renderer::Renderer(const Window& window, const Device& device, SwapChain& swapChain, const Pipeline& pipeline,
 		const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, uint32_t maxFramesInFlight
 	)
-		:window(window), device(device), swapChain(swapChain), pipeline(pipeline), maxFramesInFlight(maxFramesInFlight),
-		currentFrame(0)
+		:window(window), device(device), swapChain(swapChain), pipeline(pipeline), 
+		camera({ -2.0f, 1.0f, 0.0f }, { 0.0f, 0.0f, 4.0f }, window.getAspectRatio(), glm::radians(45.0f)),
+		maxFramesInFlight(maxFramesInFlight), currentFrame(0)
 	{
 		init(vertices, indices);
 	}
@@ -123,7 +124,7 @@ namespace Vk
 
 		for (auto& object : renderObjects)
 		{
-			object->draw(commandBuffer, pipeline.getLayout());
+			object->draw(commandBuffer, pipeline.getLayout(), camera);
 		}
 
         vkCmdEndRenderPass(commandBuffer);
@@ -137,7 +138,7 @@ namespace Vk
 		createCommandBuffers();
 		setDataBuffers(vertices, indices);
 		//Cube cube = Cube::createCube(device, glm::vec3{ 0.5, .5, .5 }, glm::vec3{ 0, 0 , 0 }, glm::vec3{ 0 }, commandPool); 
-		addRenderObject(std::make_unique<Cube>(Cube::createCube(device, glm::vec3{ 0.5, .5, .5 }, glm::vec3{ 0, 0 , 1 }, glm::vec3{ 0 }, commandPool)));
+		addRenderObject(std::make_unique<Cube>(Cube::createCube(device, glm::vec3{ 0.5, .5, .5 }, glm::vec3{ 0.5f, 0 , 4 }, glm::vec3{ 0 }, commandPool)));
 		//createUniformBuffers();
 		createSyncObjects();
 	}

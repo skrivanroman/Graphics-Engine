@@ -212,6 +212,7 @@ C:\VulkanSDK\1.3.204.0\Bin\glslc.exe $(ProjectDir)src\shaders\shader.frag -o $(P
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\vulkan\Camera.cpp" />
     <ClCompile Include="src\vulkan\Cube.cpp" />
     <ClCompile Include="src\vulkan\Renderable.cpp" />
     <ClCompile Include="src\vulkan\Pipeline.cpp" />
@@ -227,6 +228,7 @@ C:\VulkanSDK\1.3.204.0\Bin\glslc.exe $(ProjectDir)src\shaders\shader.frag -o $(P
     <ClCompile Include="src\vulkan\Buffer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\vulkan\Camera.hpp" />
     <ClInclude Include="src\vulkan\Cube.hpp" />
     <ClInclude Include="src\vulkan\Renderable.hpp" />
     <ClInclude Include="src\vulkan\Pipeline.hpp" />

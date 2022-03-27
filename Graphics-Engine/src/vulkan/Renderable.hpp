@@ -4,6 +4,7 @@
 #include <memory>
 #include <glm/gtx/transform.hpp>
 #include "Buffer.hpp"
+#include "Camera.hpp"
 
 namespace Vk
 {
@@ -26,7 +27,7 @@ namespace Vk
 		Renderable(Renderable&&) = default;
 		Renderable& operator=(const Renderable&) = delete;
 
-		virtual void draw(VkCommandBuffer commandBuffer, const VkPipelineLayout pipelineLayout) const = 0;
+		virtual void draw(VkCommandBuffer commandBuffer, const VkPipelineLayout pipelineLayout, const Camera& camera) const = 0;
 		const Buffer& getVertexBuffer() const noexcept;
 		const Buffer& getIndexBuffer() const noexcept;
 

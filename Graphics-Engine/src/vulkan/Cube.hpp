@@ -13,7 +13,7 @@ namespace Vk
 
 		Cube(Cube&&) = default;
 
-		void draw(VkCommandBuffer commandBuffer, const VkPipelineLayout pipelineLayout) const override;
+		void draw(VkCommandBuffer commandBuffer, const VkPipelineLayout pipelineLayout, const Camera& camera) const override;
 
 		static Cube createCube(const Device& device, const glm::vec3& dimensions, const glm::vec3& position, const glm::vec3& color,
 			const VkCommandPool commandPool);

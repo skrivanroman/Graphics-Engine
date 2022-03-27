@@ -11,8 +11,7 @@ namespace Vk
 	struct PushConstant
 	{
 		glm::mat4 model{ 1.0f };
-		glm::mat4 view{ 1.0f };
-		//glm::mat4 projection;
+		glm::mat4 viewProjection{ 1.0f };
 	};
 
 	//render pass belongs in SwapChain

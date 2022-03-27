@@ -9,11 +9,11 @@ layout(location = 0) out vec3 fragColor;
 layout(push_constant) uniform Push
 {
     mat4 model;
-    mat4 view;
+    mat4 viewProjection;
 } push;
 
 void main() 
 {
-    gl_Position = push.view * push.model * vec4(position, 1.0);
+    gl_Position = push.viewProjection * push.model * vec4(position, 1.0);
     fragColor = inColor;
 }

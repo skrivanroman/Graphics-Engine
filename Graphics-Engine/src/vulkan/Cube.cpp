@@ -17,7 +17,7 @@ namespace Vk
 
 	}
 
-	void Cube::draw(VkCommandBuffer commandBuffer, const VkPipelineLayout pipelineLayout) const 
+	void Cube::draw(VkCommandBuffer commandBuffer, const VkPipelineLayout pipelineLayout, const Camera& camera) const 
 	{
 		VkBuffer rawVertexBuffer = vertexBuffer->getBuffer();
 		VkDeviceSize offset = 0;
@@ -25,8 +25,8 @@ namespace Vk
 
 		//vkCmdBindIndexBuffer(commandBuffer, indexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32);
 		PushConstant push{};
-		push.view = glm::mat4{ 1.0f };
 		push.model = transform.getModel();
+		push.viewProjection = camera.getViewProjection();
 		//static unsigned long long ctr = 0;
 		//push.model = glm::rotate(push.model, glm::radians(.05f * ctr++), glm::vec3{ 0, 1, 0 });
 		//push.model = glm::rotate(push.model, glm::radians(.01f * ctr++), glm::vec3{ 1, 0, 0 });

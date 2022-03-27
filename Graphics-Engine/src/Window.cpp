@@ -55,6 +55,11 @@ VkSurfaceKHR Window::getSurface(const VkInstance instance) const
 	return surface;
 }
 
+float Window::getAspectRatio() const noexcept
+{
+	return static_cast<float>(aspectRatio);
+}
+
 std::pair<const char**, uint32_t> Window::getRequiredExtensions() const
 {
 	uint32_t count;

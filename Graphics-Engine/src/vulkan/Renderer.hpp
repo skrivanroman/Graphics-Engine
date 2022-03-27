@@ -40,6 +40,7 @@ namespace Vk
 		const Device& device;
 		SwapChain& swapChain;
 		const Pipeline& pipeline;
+		Camera camera;
 		const uint32_t maxFramesInFlight;
 		uint32_t currentFrame;
 		VkCommandPool commandPool;
