@@ -17,10 +17,14 @@ namespace Vk
 		Camera& operator=(const Camera&) = delete;
 	
 		void update();
+		void move(const glm::vec3& change) noexcept;
+		void moveTarget(const glm::vec3& change) noexcept;
 		const glm::mat4& getViewProjection() const noexcept;
 
-	private:
+	public:
 		glm::vec3 position, target, up;
+
+	private:
 		float aspectRatio, fieldOfView, near, far;
 		glm::mat4 viewProjection;
 	};

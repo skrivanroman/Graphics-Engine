@@ -1,18 +1,18 @@
 #include "Renderer.hpp"
 #include "../utils/assert.hpp"
 #include "Cube.hpp"
+#include "../input/KeyboardMouse.hpp"
 
 namespace Vk 
 {
 	
 	Renderer::Renderer(const Window& window, const Device& device, SwapChain& swapChain, const Pipeline& pipeline,
-		const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, uint32_t maxFramesInFlight
+		uint32_t maxFramesInFlight, const std::vector<std::shared_ptr<Renderable>>& renderObjects
 	)
 		:window(window), device(device), swapChain(swapChain), pipeline(pipeline), 
-		camera({ -2.0f, 1.0f, 0.0f }, { 0.0f, 0.0f, 4.0f }, window.getAspectRatio(), glm::radians(45.0f)),
-		maxFramesInFlight(maxFramesInFlight), currentFrame(0)
+		maxFramesInFlight(maxFramesInFlight), currentFrame(0), renderObjects(renderObjects)
 	{
-		init(vertices, indices);
+		init();
 	}
 
 	Renderer::~Renderer()
@@ -26,7 +26,7 @@ namespace Vk
 		vkDestroyCommandPool(device.getLogicalDevice(), commandPool, nullptr);
 	}
 
-	void Renderer::drawFrame()
+	void Renderer::drawFrame(const Camera& camera)
 	{
 		vkWaitForFences(device.getLogicalDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, NO_TIMEOUT);
 
@@ -44,7 +44,7 @@ namespace Vk
         vkResetFences(device.getLogicalDevice(), 1, &inFlightFences[currentFrame]);
 
         vkResetCommandBuffer(commandBuffers[currentFrame], 0);
-        recordCommandBuffer(commandBuffers[currentFrame], imageIndex);
+        recordCommandBuffer(commandBuffers[currentFrame], imageIndex, camera);
 
         VkSubmitInfo submitInfo{};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -67,7 +67,7 @@ namespace Vk
 		currentFrame = (currentFrame + 1) % maxFramesInFlight;
 	}
 
-	void Renderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex)
+	void Renderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, const Camera& camera)
 	{
 		VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -132,14 +132,10 @@ namespace Vk
 		assert(vkEndCommandBuffer(commandBuffer) == VK_SUCCESS, "cant end command buffer");
 	}
 
-	void Renderer::init(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices)
+	void Renderer::init()
 	{
 		createCommandPool();
 		createCommandBuffers();
-		setDataBuffers(vertices, indices);
-		//Cube cube = Cube::createCube(device, glm::vec3{ 0.5, .5, .5 }, glm::vec3{ 0, 0 , 0 }, glm::vec3{ 0 }, commandPool); 
-		addRenderObject(std::make_unique<Cube>(Cube::createCube(device, glm::vec3{ 0.5, .5, .5 }, glm::vec3{ 0.5f, 0 , 4 }, glm::vec3{ 0 }, commandPool)));
-		//createUniformBuffers();
 		createSyncObjects();
 	}
 
@@ -185,9 +181,14 @@ namespace Vk
 		indexBuffer = std::make_unique<Buffer>(device, indices, commandPool);
 	}
 
-	void Renderer::addRenderObject(std::unique_ptr<Renderable> object)
+	void Renderer::addRenderObject(std::shared_ptr<Renderable> object)
 	{
 		renderObjects.push_back(std::move(object));
+	}
+
+	const VkCommandPool Renderer::getCommandPool() const noexcept
+	{
+		return commandPool;
 	}
 
 	void Renderer::createSyncObjects()

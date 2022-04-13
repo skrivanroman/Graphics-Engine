@@ -15,6 +15,16 @@ namespace Vk
 		viewProjection = glm::perspective(fieldOfView, aspectRatio, near, far) * glm::lookAt(position, target, up);
 	}
 
+	void Camera::move(const glm::vec3& change) noexcept
+	{
+		position += change;
+	}
+
+	void Camera::moveTarget(const glm::vec3& change) noexcept
+	{
+		target += change;
+	}
+
 	const glm::mat4& Camera::getViewProjection() const  noexcept
 	{
 		return viewProjection;

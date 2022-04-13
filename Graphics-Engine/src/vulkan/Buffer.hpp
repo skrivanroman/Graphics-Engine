@@ -36,6 +36,7 @@ namespace Vk
 		VkDeviceSize getDeviceSize() const noexcept;
 		VkBuffer getBuffer() const noexcept;
 		const VkDeviceMemory getMemory() const noexcept;
+		void setData(const void* data, size_t size);
 
 	private:
 		void initVertexBuffer(const std::vector<Vertex>& vertices, const VkCommandPool commandPool);

@@ -36,6 +36,7 @@ public:
 	std::pair<const char**, uint32_t> getRequiredExtensions() const;
 	void setFullScreen(bool fullScreen);
 	void resize(uint32_t width, uint32_t height);
+	GLFWwindow* getWindowPtr() const noexcept;
 	static void onResize(GLFWwindow* glfwWindow, int32_t with, int32_t height);
 
 private:

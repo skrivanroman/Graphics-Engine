@@ -39,20 +39,7 @@ namespace Vk
 
 	void Buffer::copyBuffer(VkBuffer destinationBuffer, const VkCommandPool commandPool) const
 	{
-		VkCommandBufferAllocateInfo allocInfo{};
-		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandPool = commandPool;
-		allocInfo.commandBufferCount = 1;
-
-		VkCommandBuffer commandBuffer;
-		vkAllocateCommandBuffers(device.getLogicalDevice(), &allocInfo, &commandBuffer);
-
-		VkCommandBufferBeginInfo beginInfo{};
-		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-		vkBeginCommandBuffer(commandBuffer, &beginInfo);
+		auto commandBuffer = device.beginCommandBuffer(commandPool);
 
 		VkBufferCopy copyRegion{};
 		copyRegion.srcOffset = 0; 
@@ -60,17 +47,7 @@ namespace Vk
 		copyRegion.size = size;
 		vkCmdCopyBuffer(commandBuffer, buffer, destinationBuffer, 1, &copyRegion);
 
-		vkEndCommandBuffer(commandBuffer);
-
-		VkSubmitInfo submitInfo{};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.commandBufferCount = 1;
-		submitInfo.pCommandBuffers = &commandBuffer;
-
-		vkQueueSubmit(device.getGraphicsQueue(), 1, &submitInfo, nullptr);
-		vkQueueWaitIdle(device.getGraphicsQueue());
-
-		vkFreeCommandBuffers(device.getLogicalDevice(), commandPool, 1, &commandBuffer);
+		device.endCommandBuffer(commandBuffer, commandPool);
 	}
 
 	const uint32_t Buffer::getVertexCount() const noexcept
@@ -92,15 +69,21 @@ namespace Vk
 	{
 		return bufferMemory;
 	}
+
+	void Buffer::setData(const void* data, size_t size)
+	{
+
+		void* hostMemory;
+		vkMapMemory(device.getLogicalDevice(), bufferMemory, 0, this->size, 0, &hostMemory);
+		memcpy(hostMemory, data, size);
+		vkUnmapMemory(device.getLogicalDevice(), bufferMemory);
+
+	}
 	
 	void Buffer::initVertexBuffer(const std::vector<Vertex>& vertices, const VkCommandPool commandPool)
 	{
 		Buffer transferBuffer(device, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-		void* data;
-		vkMapMemory(device.getLogicalDevice(), transferBuffer.getMemory(), 0, size, 0, &data);
-		memcpy(data, vertices.data(), static_cast<size_t>(size));
-		vkUnmapMemory(device.getLogicalDevice(), transferBuffer.getMemory());
+		transferBuffer.setData(vertices.data(), static_cast<size_t>(size));
 
 		allocateBuffer(VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
@@ -110,11 +93,7 @@ namespace Vk
 	void Buffer::initIndexBuffer(const std::vector<uint32_t>& indices, const VkCommandPool commandPool)
 	{
 		Buffer transferBuffer(device, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-		void* data;
-		vkMapMemory(device.getLogicalDevice(), transferBuffer.getMemory(), 0, size, 0, &data);
-		memcpy(data, indices.data(), static_cast<size_t>(size));
-		vkUnmapMemory(device.getLogicalDevice(), transferBuffer.getMemory());
+		transferBuffer.setData(indices.data(), static_cast<size_t>(size));
 
 		allocateBuffer(VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 

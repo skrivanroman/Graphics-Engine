@@ -35,8 +35,8 @@ namespace Vk
         //vkCmdDrawIndexed(commandBuffer, indexBuffer->getVertexCount(), 1, 0, 0, 0);
 		vkCmdDraw(commandBuffer, vertexBuffer->getVertexCount(), 1, 0, 0);
 		//transform.rotation.x += 0.0005f;
-		transform.rotation.y = glm::mod(transform.rotation.y + 0.001f, glm::two_pi<float>());
-		transform.rotation.z = glm::mod(transform.rotation.z + 0.0005f, glm::two_pi<float>());
+		//transform.rotation.y = glm::mod(transform.rotation.y + 0.001f, glm::two_pi<float>());
+		//transform.rotation.z = glm::mod(transform.rotation.z + 0.0005f, glm::two_pi<float>());
 	}
 
 	Cube Cube::createCube(const Device& device, const glm::vec3& dimensions, const glm::vec3& position, const glm::vec3& color, const VkCommandPool commandPool)

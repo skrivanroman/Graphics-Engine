@@ -16,20 +16,21 @@ namespace Vk
 	{
 	public:
 		explicit Renderer(const Window& window, const Device& device, SwapChain& swapChain, const Pipeline& pipeline,
-			const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, uint32_t maxFramesInFlight = 2
+			uint32_t maxFramesInFlight = 2, const std::vector<std::shared_ptr<Renderable>>& renderObjects = {}
 		);
 		~Renderer();
 
 		Renderer(const Renderer&) = delete;
 		Renderer& operator=(const Renderer&) = delete;
 
-		void drawFrame();
-		void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
+		void drawFrame(const Camera& camera);
+		void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, const Camera& camera);
 		void setDataBuffers(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
-		void addRenderObject(std::unique_ptr<Renderable> object);
+		void addRenderObject(std::shared_ptr<Renderable> object);
+		const VkCommandPool getCommandPool() const noexcept;
 
 	private:
-		void init(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
+		void init();
 		void createCommandPool();
 		void createCommandBuffers();
 		void createUniformBuffers();
@@ -40,7 +41,6 @@ namespace Vk
 		const Device& device;
 		SwapChain& swapChain;
 		const Pipeline& pipeline;
-		Camera camera;
 		const uint32_t maxFramesInFlight;
 		uint32_t currentFrame;
 		VkCommandPool commandPool;
@@ -48,7 +48,7 @@ namespace Vk
 		std::vector<VkSemaphore> imageAvailableSemaphores;
 		std::vector<VkSemaphore> renderFinishedSemaphores;
 		std::vector<VkFence> inFlightFences;
-		std::vector<std::unique_ptr<Renderable>> renderObjects;
+		std::vector<std::shared_ptr<Renderable>> renderObjects;
 		std::unique_ptr<Buffer> vertexBuffer, indexBuffer;
 		//std::vector<std::unique_ptr<Buffer>> uniformBuffers;
 	};

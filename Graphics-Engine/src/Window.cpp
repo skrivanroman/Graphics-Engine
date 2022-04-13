@@ -95,7 +95,7 @@ void Window::init(const WindowCreateInfo& createInfo)
 	glfwWindowHint(GLFW_FOCUSED, GLFW_TRUE);
 	glfwWindowHint(GLFW_FLOATING, GLFW_FALSE);
 	glfwWindowHint(GLFW_CENTER_CURSOR, GLFW_TRUE);
-	
+
 	if (createInfo.fullScreen) 
 	{
 		GLFWmonitor* monitor = glfwGetPrimaryMonitor();
@@ -125,6 +125,7 @@ void Window::init(const WindowCreateInfo& createInfo)
 		glfwSetCursor(glfwWindow, glfwCursor);
 		glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	}
+
 }
 
 GLFWimage Window::loadIcon(const char* path) const
@@ -136,6 +137,11 @@ void Window::resize(uint32_t width, uint32_t height)
 {
 	aspectRatio = static_cast<double>(width) / static_cast<double>(height);
 	glfwSetWindowSize(glfwWindow, width, height);
+}
+
+GLFWwindow* Window::getWindowPtr() const noexcept
+{
+	return glfwWindow;
 }
 
 bool Window::isMinimized() const

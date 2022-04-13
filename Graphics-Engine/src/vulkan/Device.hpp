@@ -32,6 +32,8 @@ namespace Vk
 		VkQueue getPresentQueue() const;
 		VkFormat getSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const;
 		uint32_t getMemoryTypeIdx(VkFlags requiredTypes, VkMemoryPropertyFlags properties) const;
+		VkCommandBuffer beginCommandBuffer(const VkCommandPool commandPool) const;
+		void endCommandBuffer(VkCommandBuffer commandBuffer, const VkCommandPool commandPool) const;
 
 	private:
 		void init(const Window& window);
