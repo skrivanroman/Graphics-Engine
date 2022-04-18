@@ -14,7 +14,6 @@ namespace Vk
 		glm::mat4 viewProjection{ 1.0f };
 	};
 
-	//render pass belongs in SwapChain
 	class Pipeline
 	{
 	public:

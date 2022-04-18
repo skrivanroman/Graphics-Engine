@@ -23,11 +23,15 @@ private:
 	void allocateMemory();
 	void transferLayout(const VkCommandPool commandPool, VkImageLayout oldLayout, VkImageLayout newLayout);
 	void copyFromBuffer(const VkCommandPool commandPool, const Vk::Buffer& buffer, int32_t width, int32_t height);
+	void createVkImageView(const Vk::Device& device);
+	void createVkImageSampler(const Vk::Device& device);
 
 private:
 	const Vk::Device& device;
 	VkImage image;
+	VkImageView imageView;
 	VkDeviceMemory imageMemory;
 	VkDeviceSize imageSize;
+	VkSampler imageSampler;
 };
 

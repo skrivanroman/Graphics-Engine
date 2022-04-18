@@ -7,8 +7,6 @@
 namespace Vk 
 {
 
-	#define SHADER_FOLDER "src/shaders/"
-
 	class Shader //module and stage dont need to be members for now
 	{
 	public:

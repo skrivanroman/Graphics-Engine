@@ -25,6 +25,8 @@ namespace Vk
 		glm::vec3 position, target, up;
 
 	private:
+		#undef near
+		#undef far
 		float aspectRatio, fieldOfView, near, far;
 		glm::mat4 viewProjection;
 	};

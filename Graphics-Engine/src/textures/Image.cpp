@@ -9,6 +9,8 @@ Image::Image(const Vk::Device& device, const std::string& path, const VkCommandP
 
 Image::~Image() noexcept
 {
+	vkDestroySampler(device.getLogicalDevice(), imageSampler, nullptr);
+	vkDestroyImageView(device.getLogicalDevice(), imageView, nullptr);
 	vkDestroyImage(device.getLogicalDevice(), image, nullptr);
 	vkFreeMemory(device.getLogicalDevice(), imageMemory, nullptr);
 }
@@ -22,6 +24,8 @@ void Image::init(const std::string& path, const VkCommandPool commandPool, int32
 	transferLayout(commandPool, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 	copyFromBuffer(commandPool, buffer, width, height);
 	transferLayout(commandPool, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+	createVkImageView(device);
 }
 
 std::tuple<Vk::Buffer, int32_t, int32_t> Image::loadImage(const std::string& path, int32_t format)
@@ -139,4 +143,47 @@ void Image::copyFromBuffer(const VkCommandPool commandPool, const Vk::Buffer& bu
 	vkCmdCopyBufferToImage(commandBuffer, buffer.getBuffer(), image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
 	device.endCommandBuffer(commandBuffer, commandPool);
+}
+
+void Image::createVkImageView(const Vk::Device& device)
+{
+	VkImageViewCreateInfo viewInfo{};
+	viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	viewInfo.image = image;
+	viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+	viewInfo.format = VK_FORMAT_R8G8B8A8_SRGB;
+	viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	viewInfo.subresourceRange.baseMipLevel = 0;
+	viewInfo.subresourceRange.levelCount = 1;
+	viewInfo.subresourceRange.baseArrayLayer = 0;
+	viewInfo.subresourceRange.layerCount = 1;
+
+	assert(vkCreateImageView(device.getLogicalDevice(), &viewInfo, nullptr, &imageView) == VK_SUCCESS, "cant create image view");
+}
+
+void Image::createVkImageSampler(const Vk::Device& device)
+{
+	VkSamplerCreateInfo samplerInfo{};
+	samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+	samplerInfo.magFilter = VK_FILTER_LINEAR;
+	samplerInfo.minFilter = VK_FILTER_LINEAR;
+	samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	samplerInfo.anisotropyEnable = VK_TRUE;
+
+	VkPhysicalDeviceProperties properties{};
+	vkGetPhysicalDeviceProperties(device.getPhysicalDevice(), &properties);
+
+	samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
+	samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+	samplerInfo.unnormalizedCoordinates = VK_FALSE;
+	samplerInfo.compareEnable = VK_FALSE;
+	samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+	samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+	samplerInfo.mipLodBias = 0.0f;
+	samplerInfo.minLod = 0.0f;
+	samplerInfo.maxLod = 0.0f;
+
+	assert(vkCreateSampler(device.getLogicalDevice(), &samplerInfo, nullptr, &imageSampler) == VK_SUCCESS, "cant create image sampler");
 }

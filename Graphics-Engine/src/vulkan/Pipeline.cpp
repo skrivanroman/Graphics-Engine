@@ -16,7 +16,7 @@ namespace Vk
 
 	Pipeline::~Pipeline()
 	{
-		//vkDestroyDescriptorSetLayout(logicalDevice, descriptorLayout, nullptr);
+		vkDestroyDescriptorSetLayout(device.getLogicalDevice(), descriptorLayout, nullptr);
 		vkDestroyPipelineLayout(device.getLogicalDevice(), pipelineLayout, nullptr);
 		vkDestroyRenderPass(device.getLogicalDevice(), renderPass, nullptr);
 		vkDestroyPipeline(device.getLogicalDevice(), pipeline, nullptr);
@@ -253,7 +253,7 @@ namespace Vk
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutInfo.setLayoutCount = 0; 
-		pipelineLayoutInfo.pSetLayouts = nullptr; //&descriptorLayout;
+		pipelineLayoutInfo.pSetLayouts = nullptr;//&descriptorLayout;
 		pipelineLayoutInfo.pushConstantRangeCount = 1; 
 		pipelineLayoutInfo.pPushConstantRanges = &pushConstant;
 

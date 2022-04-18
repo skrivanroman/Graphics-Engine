@@ -2,6 +2,7 @@
 #include "Shader.hpp"
 #include "../utils/assert.hpp"
 #include "../utils/Logger.hpp"
+#include "../utils/path.hpp"
 
 namespace Vk 
 {
@@ -46,7 +47,8 @@ namespace Vk
 
 	std::vector<char> Shader::loadShader(const std::string& path) const
 	{
-		std::ifstream file(SHADER_FOLDER + path, std::ios::ate | std::ios::binary);
+		std::string shaderFolder = getFileDir(__FILE__) + "\\..\\shaders\\";
+		std::ifstream file(shaderFolder + path, std::ios::ate | std::ios::binary);
 
 		assert(file.is_open(), "cant open shader file");
 

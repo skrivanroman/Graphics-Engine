@@ -25,7 +25,6 @@ namespace Vk
 
 		void drawFrame(const Camera& camera);
 		void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex, const Camera& camera);
-		void setDataBuffers(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
 		void addRenderObject(std::shared_ptr<Renderable> object);
 		const VkCommandPool getCommandPool() const noexcept;
 
@@ -35,6 +34,7 @@ namespace Vk
 		void createCommandBuffers();
 		void createUniformBuffers();
 		void createSyncObjects();
+		void createDescriptorPool();
 
 	private:
 		const Window& window;
@@ -44,12 +44,12 @@ namespace Vk
 		const uint32_t maxFramesInFlight;
 		uint32_t currentFrame;
 		VkCommandPool commandPool;
+		VkDescriptorPool descriptorPool;
 		std::vector<VkCommandBuffer> commandBuffers;
 		std::vector<VkSemaphore> imageAvailableSemaphores;
 		std::vector<VkSemaphore> renderFinishedSemaphores;
 		std::vector<VkFence> inFlightFences;
 		std::vector<std::shared_ptr<Renderable>> renderObjects;
-		std::unique_ptr<Buffer> vertexBuffer, indexBuffer;
-		//std::vector<std::unique_ptr<Buffer>> uniformBuffers;
+		std::vector<std::unique_ptr<Buffer>> uniformBuffers;
 	};
 }

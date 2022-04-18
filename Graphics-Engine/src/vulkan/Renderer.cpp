@@ -137,6 +137,7 @@ namespace Vk
 		createCommandPool();
 		createCommandBuffers();
 		createSyncObjects();
+		//createDescriptorPool();
 	}
 
 	void Renderer::createCommandPool()
@@ -166,19 +167,12 @@ namespace Vk
 
 	void Renderer::createUniformBuffers() 
 	{
-		//uniformBuffers.reserve(maxFramesInFlight);
+		uniformBuffers.reserve(maxFramesInFlight);
 
 		for (size_t i = 0; i < maxFramesInFlight; ++i)
 		{
-			//uniformBuffers.push_back(std::move(std::make_unique<Buffer>(device, sizeof(Ubo), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT)));
+			uniformBuffers.push_back(std::make_unique<Buffer>(device, 128, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT));
 		}
-	}
-
-	void Renderer::setDataBuffers(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices)
-	{
-		vertexBuffer = std::make_unique<Buffer>(device, vertices, commandPool);
-
-		indexBuffer = std::make_unique<Buffer>(device, indices, commandPool);
 	}
 
 	void Renderer::addRenderObject(std::shared_ptr<Renderable> object)
@@ -210,5 +204,20 @@ namespace Vk
 			assert(vkCreateSemaphore(device.getLogicalDevice(), &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) == VK_SUCCESS, "cant create semaphore");
 			assert(vkCreateFence(device.getLogicalDevice(), &fenceInfo, nullptr, &inFlightFences[i]) == VK_SUCCESS, "cant create fence");
 		}
+	}
+
+	void Renderer::createDescriptorPool()
+	{
+		VkDescriptorPoolSize poolSize{};
+		poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		poolSize.descriptorCount = static_cast<uint32_t>(maxFramesInFlight);
+
+		VkDescriptorPoolCreateInfo poolInfo{};
+		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		poolInfo.poolSizeCount = 1;
+		poolInfo.pPoolSizes = &poolSize;
+		poolInfo.maxSets = static_cast<uint32_t>(maxFramesInFlight);
+
+		assert(vkCreateDescriptorPool(device.getLogicalDevice(), &poolInfo, nullptr, &descriptorPool), "cant create descriptro pool");
 	}
 }

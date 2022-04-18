@@ -85,7 +85,7 @@ namespace Vk
 
 		if (!deviceFeatures.geometryShader || !getQueueFamilies(physicalDevice).hasValues())
 			return 0;
-		if (!checkDeviceExtensionSupport(physicalDevice))
+		if (!checkDeviceExtensionSupport(physicalDevice) || !deviceFeatures.samplerAnisotropy)
 			return 0;
 
 		auto swapChainSupport = SwapChain::querySwapChainSupport(physicalDevice, surface);
@@ -231,6 +231,7 @@ namespace Vk
 		}
 
 		VkPhysicalDeviceFeatures deviceFeatures{};
+		deviceFeatures.samplerAnisotropy = VK_TRUE;
 
 		VkDeviceCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;

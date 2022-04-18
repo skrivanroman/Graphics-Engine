@@ -1,5 +1,9 @@
 #include <vector>
 #include <cmath>
+#include <windows.h>
+#include <string>
+#include <iostream>
+#include <filesystem>
 #include "utils/Logger.hpp"
 #include "Window.hpp"
 #include "vulkan/Vulkan.hpp"
@@ -13,6 +17,7 @@
 #include "vulkan/Camera.hpp"
 #include "input/KeyboardMouse.hpp"
 #include "vulkan/Cube.hpp"
+#include "utils/path.hpp"
 
 void run()
 {
@@ -57,6 +62,14 @@ void run()
 
 	vkDeviceWaitIdle(device.getLogicalDevice());
 }
+// TODO
+// textures/images
+// 3d models
+// descriptors
+// multisampling
+// lighting
+// ui 
+// object manipulation
 
 int main()
 {
