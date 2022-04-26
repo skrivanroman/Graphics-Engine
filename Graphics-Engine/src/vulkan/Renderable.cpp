@@ -10,6 +10,11 @@ namespace Vk
 
 	}
 
+	Renderable::Renderable()
+	{
+
+	}
+
 	Renderable::~Renderable() noexcept
 	{
 

@@ -2,21 +2,24 @@
 #include "../utils/assert.hpp"
 #include "Cube.hpp"
 #include "../input/KeyboardMouse.hpp"
+#include "../utils/radom.hpp"
 
 namespace Vk 
 {
 	
 	Renderer::Renderer(const Window& window, const Device& device, SwapChain& swapChain, const Pipeline& pipeline,
-		uint32_t maxFramesInFlight, const std::vector<std::shared_ptr<Renderable>>& renderObjects
+		uint32_t maxFramesInFlight, const std::vector<std::shared_ptr<Image>>& images,
+		const std::vector<std::shared_ptr<Renderable>>& renderObjects
 	)
 		:window(window), device(device), swapChain(swapChain), pipeline(pipeline), 
-		maxFramesInFlight(maxFramesInFlight), currentFrame(0), renderObjects(renderObjects)
+		maxFramesInFlight(maxFramesInFlight), currentFrame(0), renderObjects(renderObjects), images(images)
 	{
 		init();
 	}
 
 	Renderer::~Renderer()
 	{
+		vkDestroyDescriptorPool(device.getLogicalDevice(), descriptorPool, nullptr);
 		for (size_t i = 0; i < maxFramesInFlight; ++i)
 		{
 			vkDestroySemaphore(device.getLogicalDevice(), imageAvailableSemaphores[i], nullptr);
@@ -108,6 +111,8 @@ namespace Vk
 
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.getPipeline());
 
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.getLayout(), 0, 1, &descriptorSets[currentFrame], 0, nullptr);
+
 		//VkBuffer vertexBuffers[] = {vertexBuffer->getBuffer()};
 		//VkDeviceSize offsets[] = {0};
 		//vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
@@ -135,9 +140,16 @@ namespace Vk
 	void Renderer::init()
 	{
 		createCommandPool();
+
+			images.push_back(std::make_unique<Image>(device, "C:/Users/gewes/Pictures/mai.jpg", glm::vec2{ 1.0f }, commandPool));
+			images[0]->transform.position.z += 2;
+
+		renderObjects.push_back(images[0]);
+
 		createCommandBuffers();
 		createSyncObjects();
-		//createDescriptorPool();
+		createDescriptorPool();
+		createDescriptorSets();
 	}
 
 	void Renderer::createCommandPool()
@@ -209,7 +221,7 @@ namespace Vk
 	void Renderer::createDescriptorPool()
 	{
 		VkDescriptorPoolSize poolSize{};
-		poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		poolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 		poolSize.descriptorCount = static_cast<uint32_t>(maxFramesInFlight);
 
 		VkDescriptorPoolCreateInfo poolInfo{};
@@ -218,6 +230,42 @@ namespace Vk
 		poolInfo.pPoolSizes = &poolSize;
 		poolInfo.maxSets = static_cast<uint32_t>(maxFramesInFlight);
 
-		assert(vkCreateDescriptorPool(device.getLogicalDevice(), &poolInfo, nullptr, &descriptorPool), "cant create descriptro pool");
+		assert(vkCreateDescriptorPool(device.getLogicalDevice(), &poolInfo, nullptr, &descriptorPool) == VK_SUCCESS, "cant create descriptro pool");
+	}
+
+	void Renderer::createDescriptorSets()
+	{
+		std::vector<VkDescriptorSetLayout> layouts(maxFramesInFlight, pipeline.getDescriptorSetLayout());
+		VkDescriptorSetAllocateInfo allocInfo{};
+		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		allocInfo.descriptorPool = descriptorPool;
+		allocInfo.descriptorSetCount = static_cast<uint32_t>(maxFramesInFlight);
+		allocInfo.pSetLayouts = layouts.data();
+
+		descriptorSets.resize(maxFramesInFlight);
+		assert(vkAllocateDescriptorSets(device.getLogicalDevice(), &allocInfo, descriptorSets.data()) == VK_SUCCESS, "cant allocate descriptor sets");
+
+		for (size_t i = 0; i < maxFramesInFlight; ++i)
+		{
+			std::vector<VkDescriptorImageInfo> imageInfos(images.size());
+			std::vector<VkWriteDescriptorSet> descriptorWrites(images.size());
+			
+			for (size_t j = 0; j < images.size(); ++j)
+			{
+				imageInfos[j].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				imageInfos[j].imageView = images[j]->getImageView();
+				imageInfos[j].sampler = images[j]->getSampler();
+			
+				descriptorWrites[j].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				descriptorWrites[j].dstSet = descriptorSets[i];
+				descriptorWrites[j].dstBinding = 1;
+				descriptorWrites[j].dstArrayElement = 0;
+				descriptorWrites[j].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				descriptorWrites[j].descriptorCount = 1;
+				descriptorWrites[j].pImageInfo = &imageInfos[j];
+			}
+
+			vkUpdateDescriptorSets(device.getLogicalDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+		}
 	}
 }

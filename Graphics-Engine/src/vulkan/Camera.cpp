@@ -4,7 +4,7 @@
 namespace Vk
 {
 	Camera::Camera(const glm::vec3& position, const glm::vec3& target, float aspectRatio, float fieldOfView, float near, float far)
-		:position(position), target(target), up({ 0.0f, -1.0f, 0.0f }), aspectRatio(aspectRatio), fieldOfView(fieldOfView), 
+		:position(position), target(target), up({ 0.0f, 1.0f, 0.0f }), aspectRatio(aspectRatio), fieldOfView(fieldOfView), 
 		near(near), far(far)
 	{
 		update();

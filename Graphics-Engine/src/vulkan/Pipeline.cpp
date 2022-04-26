@@ -37,9 +37,14 @@ namespace Vk
 		return pipelineLayout;
 	}
 
+	const VkDescriptorSetLayout Pipeline::getDescriptorSetLayout() const noexcept
+	{
+		return descriptorLayout;
+	}
+
 	void Pipeline::init()
 	{
-		//createDescriptorLayout();
+		createDescriptorLayout();
 		createPipelineLayout();
 		createRenderPass();
 		swapChain.createFrameBuffers(renderPass);
@@ -48,17 +53,24 @@ namespace Vk
 
 	void Pipeline::createDescriptorLayout()
 	{
-		VkDescriptorSetLayoutBinding descriptorBinding{};
-		descriptorBinding.binding = 0;
-		descriptorBinding.descriptorCount = 1;
-		descriptorBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		descriptorBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-		descriptorBinding.pImmutableSamplers = nullptr;
+		//VkDescriptorSetLayoutBinding descriptorBinding{};
+		//descriptorBinding.binding = 0;
+		//descriptorBinding.descriptorCount = 1;
+		//descriptorBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		//descriptorBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+		//descriptorBinding.pImmutableSamplers = nullptr;
+
+		VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+		samplerLayoutBinding.binding = 1;
+		samplerLayoutBinding.descriptorCount = 1;
+		samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		samplerLayoutBinding.pImmutableSamplers = nullptr;
+		samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
 		VkDescriptorSetLayoutCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 		createInfo.bindingCount = 1;
-		createInfo.pBindings = &descriptorBinding;
+		createInfo.pBindings = &samplerLayoutBinding;
 
 		assert(vkCreateDescriptorSetLayout(device.getLogicalDevice(), &createInfo, nullptr, &descriptorLayout) == VK_SUCCESS, "cant create descriptor layout");
 	}
@@ -252,8 +264,8 @@ namespace Vk
 
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutInfo.setLayoutCount = 0; 
-		pipelineLayoutInfo.pSetLayouts = nullptr;//&descriptorLayout;
+		pipelineLayoutInfo.setLayoutCount = 1; 
+		pipelineLayoutInfo.pSetLayouts = &descriptorLayout;
 		pipelineLayoutInfo.pushConstantRangeCount = 1; 
 		pipelineLayoutInfo.pPushConstantRanges = &pushConstant;
 

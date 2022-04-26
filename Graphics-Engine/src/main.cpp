@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <filesystem>
+#define STB_IMAGE_IMPLEMENTATION
 #include "utils/Logger.hpp"
 #include "Window.hpp"
 #include "vulkan/Vulkan.hpp"
@@ -37,11 +38,11 @@ void run()
 	Vk::SwapChain swapChain(device, window);
 	Vk::Pipeline pipeline(device, swapChain);
 	Vk::Renderer renderer(window, device, swapChain, pipeline, 2);
-	Vk::Camera camera({ -2.0f, 1.0f, 0.0f }, { 0.0f, 0.0f, 4.0f }, window.getAspectRatio(), glm::radians(50.0));
+	Vk::Camera camera({ 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }, window.getAspectRatio(), glm::radians(50.0));
 	KeyboardMouse controlls(.5, .5);
 
-	auto cube = std::make_shared<Vk::Cube>(Vk::Cube::createCube(device, glm::vec3{ 0.5, .5, .5 }, glm::vec3{ 0.5f, 0 , 4 }, glm::vec3{ 0 }, renderer.getCommandPool()));
-	renderer.addRenderObject(cube);
+	//auto cube = std::make_shared<Vk::Cube>(Vk::Cube::createCube(device, glm::vec3{ 0.5, .5, .5 }, glm::vec3{ .0f, 0 , 1.5 }, glm::vec3{ 0 }, renderer.getCommandPool()));
+	//renderer.addRenderObject(cube);
 
 	while (!window.shouldClose())
 	{

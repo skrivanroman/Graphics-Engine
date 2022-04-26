@@ -12,9 +12,10 @@ namespace Vk
 	{
 		glm::vec3 position;
 		glm::vec3 color;
+		glm::vec2 texCord{0.0f};
 
 		static std::array<VkVertexInputBindingDescription, 1> getBindingDescriptions();
-		static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions();
+		static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions();
 	};
 
 	//sharing mode exlusive for now

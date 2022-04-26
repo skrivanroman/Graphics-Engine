@@ -37,6 +37,7 @@ namespace Vk
 	protected:
 		Renderable(const Device& device, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices,
 			const VkCommandPool commandPool);
+		Renderable();
 
 	protected:
 		std::unique_ptr<Buffer> vertexBuffer, indexBuffer;

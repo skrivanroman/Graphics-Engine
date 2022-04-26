@@ -26,6 +26,7 @@ namespace Vk
 		VkRenderPass getRenderPass() const;
 		VkPipeline getPipeline() const;
 		VkPipelineLayout getLayout() const noexcept;
+		const VkDescriptorSetLayout getDescriptorSetLayout() const noexcept;
 
 	private:
 		void init();

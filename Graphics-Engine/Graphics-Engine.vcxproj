@@ -233,6 +233,7 @@ C:\VulkanSDK\1.3.204.0\Bin\glslc.exe $(ProjectDir)src\shaders\shader.frag -o $(P
     <ClInclude Include="src\textures\Image.hpp" />
     <ClInclude Include="src\input\KeyboardMouse.hpp" />
     <ClInclude Include="src\utils\path.hpp" />
+    <ClInclude Include="src\utils\radom.hpp" />
     <ClInclude Include="src\vulkan\Camera.hpp" />
     <ClInclude Include="src\vulkan\Cube.hpp" />
     <ClInclude Include="src\vulkan\Renderable.hpp" />

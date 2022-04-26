@@ -1,8 +1,11 @@
 #include "Image.hpp"
 #include "../utils/assert.hpp"
+#include "../vulkan/Pipeline.hpp"
 
-Image::Image(const Vk::Device& device, const std::string& path, const VkCommandPool commandPool, int32_t format)
-	:device(device)
+Image::Image(const Vk::Device& device, const std::string& path, const glm::vec2& dimensions, 
+	const VkCommandPool commandPool, int32_t format
+)
+	:device(device), dimensions(dimensions)
 {
 	init(path, commandPool, format);
 }
@@ -13,6 +16,37 @@ Image::~Image() noexcept
 	vkDestroyImageView(device.getLogicalDevice(), imageView, nullptr);
 	vkDestroyImage(device.getLogicalDevice(), image, nullptr);
 	vkFreeMemory(device.getLogicalDevice(), imageMemory, nullptr);
+}
+
+const VkImageView Image::getImageView() const noexcept
+{
+	return imageView;
+}
+
+const VkSampler Image::getSampler() const noexcept
+{
+	return imageSampler;
+}
+
+void Image::draw(VkCommandBuffer commandBuffer, const VkPipelineLayout pipelineLayout, const Vk::Camera& camera) const
+{
+		VkBuffer rawVertexBuffer = vertexBuffer->getBuffer();
+		VkDeviceSize offset = 0;
+		vkCmdBindVertexBuffers(commandBuffer, 0, 1, &rawVertexBuffer, &offset);
+
+		vkCmdBindIndexBuffer(commandBuffer, indexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32);
+		Vk::PushConstant push{};
+		push.model = transform.getModel();
+		push.viewProjection = camera.getViewProjection();
+
+		vkCmdPushConstants(commandBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(Vk::PushConstant), &push);
+
+        vkCmdDrawIndexed(commandBuffer, indexBuffer->getVertexCount(), 1, 0, 0, 0);
+
+		//transform.rotation.y = transform.rotation.y + 0.001;
+		transform.scale.x += 0.001;
+		if (transform.scale.x > 2.5f)
+			transform.scale.x = 1;
 }
 
 void Image::init(const std::string& path, const VkCommandPool commandPool, int32_t format)
@@ -26,9 +60,12 @@ void Image::init(const std::string& path, const VkCommandPool commandPool, int32
 	transferLayout(commandPool, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 	createVkImageView(device);
+	createVkImageSampler();
+
+	createBuffers(commandPool);
 }
 
-std::tuple<Vk::Buffer, int32_t, int32_t> Image::loadImage(const std::string& path, int32_t format)
+std::tuple<std::unique_ptr<Vk::Buffer>, int32_t, int32_t> Image::loadImage(const std::string& path, int32_t format)
 {
 	int32_t width, height, channels;
 	stbi_uc* pixels = stbi_load(path.c_str(), &width, &height, &channels, format);
@@ -36,8 +73,8 @@ std::tuple<Vk::Buffer, int32_t, int32_t> Image::loadImage(const std::string& pat
 	assert(pixels != nullptr, "cant load image");
 
 	imageSize = static_cast<VkDeviceSize>(width) * height * 4;
-	Vk::Buffer transferBuffer(device, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	transferBuffer.setData(pixels, imageSize);
+	auto transferBuffer = std::make_unique<Vk::Buffer>(device, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	transferBuffer->setData(pixels, imageSize);
 
 	stbi_image_free(pixels);
 
@@ -125,7 +162,7 @@ void Image::transferLayout(const VkCommandPool commandPool, VkImageLayout oldLay
 	device.endCommandBuffer(commandBuffer, commandPool);
 }
 
-void Image::copyFromBuffer(const VkCommandPool commandPool, const Vk::Buffer& buffer, int32_t width, int32_t height)
+void Image::copyFromBuffer(const VkCommandPool commandPool, const std::unique_ptr<Vk::Buffer>& buffer, int32_t width, int32_t height)
 {
 	VkCommandBuffer commandBuffer = device.beginCommandBuffer(commandPool);
 
@@ -140,7 +177,7 @@ void Image::copyFromBuffer(const VkCommandPool commandPool, const Vk::Buffer& bu
 	region.imageOffset = {0, 0, 0};
 	region.imageExtent = { static_cast<uint32_t>(width), static_cast<uint32_t>(height), 1 };
 
-	vkCmdCopyBufferToImage(commandBuffer, buffer.getBuffer(), image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+	vkCmdCopyBufferToImage(commandBuffer, buffer->getBuffer(), image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
 	device.endCommandBuffer(commandBuffer, commandPool);
 }
@@ -161,7 +198,7 @@ void Image::createVkImageView(const Vk::Device& device)
 	assert(vkCreateImageView(device.getLogicalDevice(), &viewInfo, nullptr, &imageView) == VK_SUCCESS, "cant create image view");
 }
 
-void Image::createVkImageSampler(const Vk::Device& device)
+void Image::createVkImageSampler()
 {
 	VkSamplerCreateInfo samplerInfo{};
 	samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -186,4 +223,28 @@ void Image::createVkImageSampler(const Vk::Device& device)
 	samplerInfo.maxLod = 0.0f;
 
 	assert(vkCreateSampler(device.getLogicalDevice(), &samplerInfo, nullptr, &imageSampler) == VK_SUCCESS, "cant create image sampler");
+}
+
+void Image::createBuffers(const VkCommandPool commandPool)
+{
+	std::vector<Vk::Vertex> vertices(4, { glm::vec3{0.0f}, glm::vec3{0.0f} });
+	vertices[0].position.x = -dimensions.x / 2.0f;
+	vertices[0].position.y = -dimensions.y / 2.0f;
+	vertices[0].texCord = glm::vec2{ 1.0f, 0.0f };
+	vertices[1].position.x = dimensions.x / 2.0f;
+	vertices[1].position.y = -dimensions.y / 2.0f;
+	vertices[1].texCord = glm::vec2{ 0.0f };
+	vertices[2].position.x = dimensions.x / 2.0f;
+	vertices[2].position.y = dimensions.y / 2.0f;
+	vertices[2].texCord = glm::vec2{ 0.0f, 1.0f };
+	vertices[3].position.x = -dimensions.x / 2.0f;
+	vertices[3].position.y = dimensions.y / 2.0f;
+	vertices[3].texCord = glm::vec2{ 1.0f };
+	
+	std::vector<uint32_t> indices = {
+		0, 1, 2, 2, 3, 0
+	};
+
+	vertexBuffer = std::make_unique<Vk::Buffer>(device, vertices, commandPool);
+	indexBuffer = std::make_unique<Vk::Buffer>(device, indices, commandPool);
 }

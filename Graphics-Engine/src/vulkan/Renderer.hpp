@@ -9,6 +9,7 @@
 #include "Buffer.hpp"
 #include "Renderable.hpp"
 #include "Cube.hpp"
+#include "../textures/Image.hpp"
 
 namespace Vk 
 {
@@ -16,7 +17,8 @@ namespace Vk
 	{
 	public:
 		explicit Renderer(const Window& window, const Device& device, SwapChain& swapChain, const Pipeline& pipeline,
-			uint32_t maxFramesInFlight = 2, const std::vector<std::shared_ptr<Renderable>>& renderObjects = {}
+			uint32_t maxFramesInFlight = 2, const std::vector<std::shared_ptr<Image>>& images = {},
+			const std::vector<std::shared_ptr<Renderable>>& renderObjects = {}
 		);
 		~Renderer();
 
@@ -35,6 +37,7 @@ namespace Vk
 		void createUniformBuffers();
 		void createSyncObjects();
 		void createDescriptorPool();
+		void createDescriptorSets();
 
 	private:
 		const Window& window;
@@ -51,5 +54,7 @@ namespace Vk
 		std::vector<VkFence> inFlightFences;
 		std::vector<std::shared_ptr<Renderable>> renderObjects;
 		std::vector<std::unique_ptr<Buffer>> uniformBuffers;
+		std::vector<VkDescriptorSet> descriptorSets;
+		std::vector<std::shared_ptr<Image>> images;
 	};
 }
